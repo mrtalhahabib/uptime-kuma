@@ -252,6 +252,12 @@ let needSetup = false;
         log.info("server", "Cycle dashboard enabled at /cycle from " + cycleDir);
     }
 
+    // MrGeek: cycle button — SPA html gets a script tag that adds a floating
+    // "Cycle" button linking to /cycle/ (lazy: indexHTML loads in constructor)
+    const cycleBtnEnabled = fs.existsSync(cycleDir + "/cycle-btn.js");
+    let cycleBtnSPAHTML = null;
+    const cycleBtnTag = '<script src="/cycle/cycle-btn.js" defer></script>';
+
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
     }));
@@ -276,7 +282,12 @@ let needSetup = false;
         if (_request.originalUrl.startsWith("/upload/")) {
             response.status(404).send("File not found.");
         } else {
-            response.send(server.indexHTML);
+            // MrGeek: one-time SPA html injection (skip /status pages — they have their own html)
+            if (cycleBtnEnabled && cycleBtnSPAHTML === null && server.indexHTML && server.indexHTML.includes("</head>")) {
+                cycleBtnSPAHTML = server.indexHTML.replace("</head>", cycleBtnTag + "</head>");
+                log.info("server", "Cycle button injected into SPA html");
+            }
+            response.send(cycleBtnSPAHTML || server.indexHTML);
         }
     });
 
