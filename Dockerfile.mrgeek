@@ -1,0 +1,5 @@
+# MrGeek overlay build: stock 1.23.17 + our patched server.js (single COPY).
+# Fast + zero-RAM-spike on the shared prod VPS. Upstream Dockerfile remains
+# available in this repo for a full from-source rebuild if ever needed.
+FROM louislam/uptime-kuma:1.23.17
+COPY server/server.js /app/server/server.js

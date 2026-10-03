@@ -245,6 +245,13 @@ let needSetup = false;
     // With Basic Auth using the first user's username/password
     app.get("/metrics", apiAuth, prometheusAPIMetrics());
 
+    // MrGeek: /cycle — serve generated cycle dashboard from mounted volume (our only change vs upstream)
+    const cycleDir = process.env.CYCLE_HTML_DIR || "/app/cycle-html";
+    if (fs.existsSync(cycleDir + "/index.html")) {
+        app.use("/cycle", express.static(cycleDir, { maxAge: 60 }));
+        log.info("server", "Cycle dashboard enabled at /cycle from " + cycleDir);
+    }
+
     app.use("/", expressStaticGzip("dist", {
         enableBrotli: true,
     }));
